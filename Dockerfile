@@ -4,7 +4,7 @@ WORKDIR /app
 
 ENV GOOGLE_CLOUD_PROJECT="365383383851"
 ENV GOOGLE_CLIENT_CONFIG_SECRET_ID="spotify-oauth-client-secret"
-ENV REDIRECT_URI="https://spotify-oauth-365383383851.us-central1.run.app/oauth2callback"
+ENV REDIRECT_URI="https://host-spotify-vertexai-365383383851.us-central1.run.app/oauth2callback"
 ENV PORT=8080
 
 RUN apt-get update && apt-get install -y --no-install-recommends \

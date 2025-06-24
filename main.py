@@ -12,7 +12,7 @@ from spotipy.oauth2 import SpotifyOAuth
 
 credentials, PROJECT_ID = default()
 CLIENT_CONFIG_SECRET_ID = os.environ.get("GOOGLE_CLIENT_CONFIG_SECRET_ID")
-REDIRECT_URI = os.environ.get("REDIRECT_URI", "https://spotify-oauth-365383383851.us-central1.run.app/oauth2callback")
+REDIRECT_URI = os.environ.get("REDIRECT_URI", "https://host-spotify-vertexai-365383383851.us-central1.run.app/oauth2callback")
 
 app = FastAPI()
 
@@ -107,19 +107,22 @@ def oauth2callback(request: Request):
     )
     token_info = sp_oauth.get_access_token(code, as_dict=False)
     print("TOKEN:", token_info)
+    for inst in config:
+        inst["token"] = token_info
+    print("CONFIG:", config)
      
     if not state:
         raise HTTPException(status_code=400, detail="Missing state; please try /login again.")
 
     # Store credentials in our in-memory session store for demonstration.
-    resp = requests.post(f"https://{agent_id}.us-central1.run.app/store_credentials",json={
-        "token": token_info
-    }, headers={"Content-Type": "application/json"})
+    #resp = requests.post(f"https://us-central1-aiplatform.googleapis.com/v1/projects/365383383851/locations/us-central1/endpoints/{agent_id}:store_credentials",json={
+    #    "token": token_info
+    #}, headers={"Content-Type": "application/json"})
 
-    resp.raise_for_status()
+    #resp.raise_for_status()
     
     # In a production app, link these credentials to the user account in your database.
-    resp = requests.post(f"https://{agent_id}.us-central1.run.app/{route}", json=config, headers={"Content-Type": "application/json"})
+    resp = requests.post("https://call-vertexai-model-365383383851.us-central1.run.app/predict", json=config, headers={"Content-Type": "application/json"})
 
     if not resp.ok:
         raise HTTPException(
