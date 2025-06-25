@@ -50,12 +50,7 @@ def get_client_config_from_secret_manager():
 @app.get("/login")
 def login(request: Request):
     client_config = get_client_config_from_secret_manager()
-    agent_id    = request.query_params.get("agent_id")
-    route = request.query_params.get("route")
-    config = json.loads(unquote_plus(request.query_params.get("config")))
     scopes_param = request.query_params.get("scopes")
-    if not agent_id or not scopes_param:
-        raise HTTPException(400, "Missing agent_id or scopes")
     
     scopes = scopes_param.split(",")
 
@@ -71,10 +66,7 @@ def login(request: Request):
     print("AUTH:", auth_url)
 
     state = json.dumps({
-        "agent_id": agent_id,
         "scopes": scopes,
-        "route": route,
-        "config": config
     })
     
     # Set a secure, HTTP-only cookie with the state.
@@ -92,10 +84,7 @@ def oauth2callback(request: Request):
     state = request.cookies.get("oauth_state")
 
     payload = json.loads(state)
-    agent_id = payload.get("agent_id")
-    route = payload.get("route")
     scopes = payload.get("scopes")
-    config = payload.get("config")
 
     code = request.query_params.get("code")
     client_config = get_client_config_from_secret_manager()
@@ -107,9 +96,6 @@ def oauth2callback(request: Request):
     )
     token_info = sp_oauth.get_access_token(code, as_dict=False)
     print("TOKEN:", token_info)
-    for inst in config:
-        inst["token"] = token_info
-    print("CONFIG:", config)
      
     if not state:
         raise HTTPException(status_code=400, detail="Missing state; please try /login again.")
@@ -122,7 +108,8 @@ def oauth2callback(request: Request):
     #resp.raise_for_status()
     
     # In a production app, link these credentials to the user account in your database.
-    resp = requests.post("https://call-vertexai-model-365383383851.us-central1.run.app/predict", json=config, headers={"Content-Type": "application/json"})
+    #resp = requests.post(f"https://{agent_id}.us-central1.run.app/{route}", json=config, headers={"Content-Type": "application/json"})
+    return JSONResponse(content={"token": token_info})
 
     if not resp.ok:
         raise HTTPException(
