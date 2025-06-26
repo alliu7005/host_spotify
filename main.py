@@ -7,7 +7,7 @@ import json
 from google.cloud import secretmanager
 import uvicorn
 import requests
-from urllib.parse import unquote_plus
+from urllib.parse import unquote_plus, quote_plus
 from spotipy.oauth2 import SpotifyOAuth
 
 credentials, PROJECT_ID = default()
@@ -51,6 +51,7 @@ def get_client_config_from_secret_manager():
 def login(request: Request):
     client_config = get_client_config_from_secret_manager()
     scopes_param = request.query_params.get("scopes")
+    return_url = request.query_params.get("return_url")
     
     scopes = scopes_param.split(",")
 
@@ -67,11 +68,12 @@ def login(request: Request):
 
     state = json.dumps({
         "scopes": scopes,
+        "return_url": return_url
     })
     
     # Set a secure, HTTP-only cookie with the state.
     redirect_response = RedirectResponse(url=auth_url)
-    redirect_response.set_cookie(key="oauth_state", value=state, httponly=True)
+    redirect_response.set_cookie(key="oauth_state", value=quote_plus(state), httponly=True, secure=False, samesite="lax", path="/")
     return redirect_response
 
 @app.get("/oauth2callback")
@@ -81,10 +83,11 @@ def oauth2callback(request: Request):
     and store the credentials. In a production setting, these credentials should
     be stored securely and associated with the user's account.
     """
-    state = request.cookies.get("oauth_state")
-
+    state = unquote_plus(request.cookies.get("oauth_state"))
     payload = json.loads(state)
+    
     scopes = payload.get("scopes")
+    return_url = payload.get("return_url")
 
     code = request.query_params.get("code")
     client_config = get_client_config_from_secret_manager()
@@ -109,17 +112,9 @@ def oauth2callback(request: Request):
     
     # In a production app, link these credentials to the user account in your database.
     #resp = requests.post(f"https://{agent_id}.us-central1.run.app/{route}", json=config, headers={"Content-Type": "application/json"})
-    return JSONResponse(content={"token": token_info})
-
-    if not resp.ok:
-        raise HTTPException(
-            status_code=502,
-            detail=f"Agent Failed {resp.status_code} {resp.text}"
-        )
-
-    return JSONResponse(
-        status_code=resp.status_code,
-        content=resp.json()
+    return RedirectResponse(
+        url=f"{return_url}?token={token_info}"
+        , status_code=303
     )
 
 if __name__ == "__main__":
