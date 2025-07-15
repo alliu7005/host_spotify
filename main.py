@@ -12,7 +12,7 @@ from spotipy.oauth2 import SpotifyOAuth
 
 credentials, PROJECT_ID = default()
 CLIENT_CONFIG_SECRET_ID = os.environ.get("GOOGLE_CLIENT_CONFIG_SECRET_ID")
-REDIRECT_URI = os.environ.get("REDIRECT_URI", "https://host-spotify-vertexai-365383383851.us-central1.run.app/oauth2callback")
+REDIRECT_URI = os.environ.get("REDIRECT_URI", "https://spotify-oauth-206239759924.us-central1.run.app/oauth2callback")
 
 app = FastAPI()
 

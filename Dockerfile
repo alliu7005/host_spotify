@@ -2,9 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-ENV GOOGLE_CLOUD_PROJECT="365383383851"
-ENV GOOGLE_CLIENT_CONFIG_SECRET_ID="spotify-oauth-client-secret"
-ENV REDIRECT_URI="https://host-spotify-vertexai-365383383851.us-central1.run.app/oauth2callback"
+ENV GOOGLE_CLOUD_PROJECT="206239759924"
+ENV GOOGLE_CLIENT_CONFIG_SECRET_ID="spotify-oauth"
+ENV REDIRECT_URI="https://spotify-oauth-206239759924.us-central1.run.app/oauth2callback"
 ENV PORT=8080
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
